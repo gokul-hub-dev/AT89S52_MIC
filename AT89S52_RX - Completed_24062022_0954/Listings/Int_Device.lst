@@ -1,0 +1,73 @@
+C51 COMPILER V9.60.0.0   INT_DEVICE                                                        06/24/2022 16:45:56 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE INT_DEVICE
+OBJECT MODULE PLACED IN .\Objects\Int_Device.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Int_Device.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\Int_Device.lst) TABS(2) OBJECT(.\Objects\Int_Device.obj)
+
+line level    source
+
+   1          #include <REGX51.H>
+   2          #include <MyHeader.h>
+   3          
+   4          /********* UART Int ***************/
+   5          void Int_Uart()
+   6          {
+   7   1        TMOD = 0x20; //use timer 1, 8 bit auto reload
+   8   1        SCON = 0x50; // Mode 1, reception enable 
+   9   1        PCON = 0x80; //enable SMOD register
+  10   1        TH1 = 0xFD; //9600 baud rate
+  11   1        //TH1 = 0xFE; //19200 baud rate
+  12   1        TR1 = 1; //start timer for baud rate generate
+  13   1        //  ES = 1; // enable serial interrupt
+  14   1        //  EA = 1; // enable global interrupt bit
+  15   1      }
+  16          
+  17          /******** TX Char ****************/
+  18          void Tx_char(unsigned char Tx_Data)
+  19          {
+  20   1        SBUF = Tx_Data;
+  21   1        while(TI == 0);
+  22   1        TI = 0;
+  23   1      }
+  24          
+  25          /*********TX STRING***************/
+  26          void Tx_string(unsigned char *get_data)
+  27          {
+  28   1        unsigned int addr=0;
+  29   1        while(*(get_data+addr)!='\0')
+  30   1        {
+  31   2          Tx_char(*(get_data+addr));
+  32   2          addr++;
+  33   2        }
+  34   1      }
+  35          
+  36          /******** RX Char ****************/
+  37          unsigned char Rx_char()
+  38          {
+  39   1        unsigned char Rx_Data;
+  40   1        while(RI == 0);
+  41   1        Rx_Data = SBUF;
+  42   1        RI = 0;
+  43   1        return(Rx_Data);
+  44   1      }
+  45          
+  46          
+  47          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     67    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.0.0   INT_DEVICE                                                        06/24/2022 16:45:56 PAGE 2   
+
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

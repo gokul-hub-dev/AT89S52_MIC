@@ -1,0 +1,125 @@
+C51 COMPILER V9.60.0.0   MAIN                                                              06/25/2022 15:12:51 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <REGX51.H>
+   2          #include <MyHeader.h>
+   3          #define TX_CAPACITY 6
+   4          unsigned char tx_data[TX_CAPACITY];
+   5          
+   6          unsigned int i;
+   7          unsigned int Rx_Addr = 0,one_time = 1;
+   8          unsigned char Rx_Data[5];
+   9          unsigned int count = 0;
+  10          
+  11          void serial_isr() interrupt 4 {
+  12   1        unsigned char receivedChar;
+  13   1        if (RI == 1) {
+  14   2          RI = 0; // Clear the Receive interrupt flag
+  15   2          receivedChar = SBUF; // get character in var  
+  16   2          //    if (Rx_Addr >= 6) Rx_Addr=0;
+  17   2          //    Rx_Data[Rx_Addr++] = receivedChar; //working
+  18   2          if (Rx_Addr >= 6) Rx_Addr=0;
+  19   2          else{
+  20   3            Rx_Data[Rx_Addr++] = receivedChar; //working
+  21   3            if(Rx_Data[0] != 0xA5) Rx_Addr=0;       
+  22   3          }
+  23   2        }
+  24   1      }
+  25          
+  26          void timer0_isr() interrupt 1
+  27          {
+  28   1        TH0 = 0x4B;
+  29   1        TL0 = 0xFD;
+  30   1        count++;
+  31   1      }
+  32          
+  33          void main() {
+  34   1        Int_Uart();
+  35   1      
+  36   1        P1 = 0x00; // OUTPUT PORT
+  37   1       // P2 = 0x00; // OUTPUT PORT
+  38   1        P2 = 0xFF; // INPUT PORT
+  39   1        P0 = 0xFF; // INPUT PORT
+  40   1        Port3_Init();
+  41   1      
+  42   1        while (1) {
+  43   2          if(count>=10){
+  44   3          tx_data[0] = IDENTITY_BYTE;
+  45   3          tx_data[1] = START_BYTE;
+  46   3          tx_data[2] = P0;
+  47   3          tx_data[3] = P2;//TEST
+  48   3          //tx_data[3] = P3;
+  49   3          tx_data[4] = CHECKSUM(tx_data[2], tx_data[3]);
+  50   3          tx_data[5] = END_BYTE;
+  51   3          //Tx_string(tx_data);
+  52   3            Tx_char(tx_data[0]);
+  53   3            Tx_char(tx_data[1]);
+  54   3            Tx_char(tx_data[2]);
+C51 COMPILER V9.60.0.0   MAIN                                                              06/25/2022 15:12:51 PAGE 2   
+
+  55   3            Tx_char(tx_data[3]);
+  56   3            Tx_char(tx_data[4]);
+  57   3            Tx_char(tx_data[5]);
+  58   3            count=0;
+  59   3          }
+  60   2          
+  61   2            Delay(10);
+  62   2          if (Rx_Addr != 0){  
+  63   3            if (Rx_Data[0] == IDENTITY_BYTE) {
+  64   4              if (Rx_Data[1] == START_BYTE) {
+  65   5                unsigned char temp = CHECKSUM(Rx_Data[2], Rx_Data[3]);
+  66   5                if ((Rx_Data[4] == temp) && (Rx_Data[5] == END_BYTE)) {
+  67   6                  P1 = Rx_Data[2];
+  68   6                  //P2 = Rx_Data[3];
+  69   6                  P3 = Rx_Data[3];
+  70   6                  Tx_string("WORKING");
+  71   6                  memset(Rx_Data, '\0', 6 * sizeof(char));
+  72   6                } 
+  73   5                else {
+  74   6                  Tx_char(temp);
+  75   6                  Tx_char(Rx_Data[4]);
+  76   6                  Tx_char(Rx_Data[5]);
+  77   6                  Rx_Addr=0;
+  78   6                  Tx_string("WRONG CHECKSUM or END_BYTE");
+  79   6                  memset(Rx_Data, '\0', 6 * sizeof(char));
+  80   6                }
+  81   5              } 
+  82   4              else {
+  83   5                Rx_Addr=0;
+  84   5                Tx_string("WRONG START_BYTE");
+  85   5                memset(Rx_Data, '\0', 6 * sizeof(char));
+  86   5              }
+  87   4            }
+  88   3            else
+  89   3            {
+  90   4              Tx_char(Rx_Data[0]);
+  91   4              Rx_Addr=0;
+  92   4              Tx_string("IDENTITY WRONG");
+  93   4              memset(Rx_Data, '\0', 6 * sizeof(char));
+  94   4            }
+  95   3            Rx_Addr=0;
+  96   3            memset(Rx_Data, '\0', 6 * sizeof(char));
+  97   3          }
+  98   2        }
+  99   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    319    ----
+   CONSTANT SIZE    =     67    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     19       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

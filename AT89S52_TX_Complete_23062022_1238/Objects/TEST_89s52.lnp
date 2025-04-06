@@ -1,0 +1,5 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj",
+".\Objects\Int_Device.obj" 
+TO ".\Objects\TEST_89s52" 
+PRINT(".\Listings\TEST_89s52.m51") RAMSIZE(256) 

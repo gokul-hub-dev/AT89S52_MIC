@@ -1,0 +1,102 @@
+C51 COMPILER V9.60.0.0   INT_DEVICE                                                        06/25/2022 11:47:41 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE INT_DEVICE
+OBJECT MODULE PLACED IN .\Objects\Int_Device.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Int_Device.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\Int_Device.lst) TABS(2) OBJECT(.\Objects\Int_Device.obj)
+
+line level    source
+
+   1          #ifndef _INT_DEVICE_H
+   2          #define _INT_DEVICE_H
+   3          #include <REGX51.H>
+   4          #include <MyHeader.h>
+   5          
+   6          /********* UART Int ***************/
+   7          void Int_Uart()
+   8          {
+   9   1      //  TMOD = 0x20; //use timer 1, 8 bit auto reload
+  10   1        TMOD = 0x21; //sets the mode1 of Timer0 used for timing & sets the mode2 of Timer1 used for timing
+  11   1        SCON = 0x50; // Mode 1, reception enable 
+  12   1        PCON = 0x80; //enable SMOD register
+  13   1        TH1 = 0xFD; //9600 baud rate
+  14   1        TR1 = 1; //start timer for baud rate generate
+  15   1        ES = 1; // enable serial interrupt
+  16   1        EA = 1; // enable global interrupt bit
+  17   1        
+  18   1        TH0 = 0x4B; // LOAD THE TIMER VALUE
+  19   1        TL0 = 0xFD;
+  20   1        TR0 = 1; // ENABLE TIMER0 INTERRUPT
+  21   1        ET0 = 1;
+  22   1      }
+  23          
+  24          /******** TX Char ****************/
+  25          void Tx_char(unsigned char Tx_Data)
+  26          {
+  27   1        SBUF = Tx_Data;
+  28   1        while(TI == 0);
+  29   1        TI = 0;
+  30   1      }
+  31          
+  32          /*********TX STRING***************/
+  33          void Tx_string(unsigned char *get_data)
+  34          {
+  35   1        unsigned int addr=0;
+  36   1        while(*(get_data+addr)!='\0')
+  37   1        {
+  38   2          Tx_char(*(get_data+addr));
+  39   2          addr++;
+  40   2        }
+  41   1      }
+  42          
+  43          /******** RX Char ****************/
+  44          //unsigned char Rx_char()
+  45          //{
+  46          //  unsigned char Rx_Data;
+  47          //  while(RI == 0);
+  48          //  Rx_Data = SBUF;
+  49          //  RI = 0;
+  50          //  return(Rx_Data);
+  51          //}
+  52          
+  53          /********PORT 3 init***************/ //DON'T REMOVE. IF REMOVE SERIAL WILL NOT WORK
+  54          void Port3_Init() {
+C51 COMPILER V9.60.0.0   INT_DEVICE                                                        06/25/2022 11:47:41 PAGE 2   
+
+  55   1        PORT3_PIN2 = 1;
+  56   1        PORT3_PIN3 = 1;
+  57   1        PORT3_PIN4 = 1;
+  58   1        PORT3_PIN5 = 1;
+  59   1        PORT3_PIN6 = 1;
+  60   1        PORT3_PIN7 = 1;
+  61   1      }
+  62          
+  63          void Delay(unsigned int itime)
+  64          {
+  65   1      unsigned int i,j;
+  66   1        for (i=0;i<itime;i++) // this is For(); loop delay used to define delay value in Embedded C
+  67   1        {
+  68   2          for (j=0;j<1275;j++);
+  69   2        }
+  70   1      }
+  71          
+  72          #endif
+  73          
+  74          
+  75          
+  76          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    118    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

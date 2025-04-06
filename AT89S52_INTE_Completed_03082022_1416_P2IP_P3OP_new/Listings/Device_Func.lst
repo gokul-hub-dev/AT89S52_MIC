@@ -1,0 +1,192 @@
+C51 COMPILER V9.60.0.0   DEVICE_FUNC                                                       08/09/2022 13:41:54 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE DEVICE_FUNC
+OBJECT MODULE PLACED IN .\Objects\Device_Func.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Device_Func.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\Device_Func.lst) TABS(2) OBJECT(.\Objects\Device_Func.obj)
+
+line level    source
+
+   1          #include <MyHeader.h>
+   2          
+   3          /********* UART Int ***************/
+   4          void Int_Uart() {
+   5   1        // TMOD = 0x20; //use timer 1, 8 bit auto reload
+   6   1        TMOD = 0x21; //sets the mode1 of Timer0 used for timing & sets the mode2 of Timer1 used for timing
+   7   1        SCON = 0x50; // Mode 1, reception enable 
+   8   1        PCON = 0x80; //enable SMOD register
+   9   1        TH1 = 0xFD; //19600 baud rate
+  10   1        TR1 = 1; //start timer for baud rate generate
+  11   1        ES = 1; // enable serial interrupt
+  12   1        EA = 1; // enable global interrupt bit
+  13   1      
+  14   1        /*********Timer0 Enable***********/
+  15   1        TH0 = 0x4B; // LOAD THE TIMER VALUE
+  16   1        TL0 = 0xFD;
+  17   1        TR0 = 1; // ENABLE TIMER0 INTERRUPT
+  18   1        ET0 = 1;
+  19   1      }
+  20          
+  21          /******** TX Char ****************/
+  22          void Tx_char(unsigned char Tx_Data) {
+  23   1        SBUF = Tx_Data;
+  24   1        while (TI == 0);
+  25   1        TI = 0;
+  26   1      }
+  27          
+  28          /*********TX STRING***************/
+  29          void Tx_string(unsigned char * get_data) {
+  30   1        unsigned int addr = 0;
+  31   1        while ( * (get_data + addr) != '\0') {
+  32   2          Tx_char( * (get_data + addr));
+  33   2          addr++;
+  34   2        }
+  35   1      }
+  36          
+  37          /******** RX Char ****************/
+  38          //unsigned char Rx_char()
+  39          //{
+  40          //  unsigned char Rx_Data;
+  41          //  while(RI == 0);
+  42          //  Rx_Data = SBUF;
+  43          //  RI = 0;
+  44          //  return(Rx_Data);
+  45          //}
+  46          
+  47          /********PORT 3 init***************/ //DON'T REMOVE. IF REMOVE SERIAL WILL NOT WORK
+  48          void Port3_Init() {
+  49   1        /********input***********/
+  50   1        //  PORT3_PIN2 = 1;
+  51   1        //  PORT3_PIN3 = 1;
+  52   1        //  PORT3_PIN4 = 1;
+  53   1        //  PORT3_PIN5 = 1;
+  54   1        //  PORT3_PIN6 = 1;
+C51 COMPILER V9.60.0.0   DEVICE_FUNC                                                       08/09/2022 13:41:54 PAGE 2   
+
+  55   1        //  PORT3_PIN7 = 1;
+  56   1        /******OUTPUT******/
+  57   1        PORT3_PIN2 = 0;
+  58   1        PORT3_PIN3 = 0;
+  59   1        PORT3_PIN4 = 0;
+  60   1        PORT3_PIN5 = 0;
+  61   1        PORT3_PIN6 = 0;
+  62   1        PORT3_PIN7 = 0;
+  63   1      }
+  64          
+  65          void Delay(unsigned int itime) {
+  66   1        unsigned int i, j;
+  67   1        for (i = 0; i < itime; i++) // this is For(); loop delay used to define delay value in Embedded C
+  68   1        {
+  69   2          for (j = 0; j < 1275; j++);
+  70   2        }
+  71   1      }
+  72          
+  73          /**************** check the port 3 pin status individually  ****************************/
+  74          unsigned char PORT3_func() {
+  75   1      
+  76   1        unsigned char PORT3 = 0x00;
+  77   1        //  if (PORT3_PIN0 == 0)
+  78   1        //    PORT3 = PORT3 | 0x01; 
+  79   1        //  else
+  80   1        //    PORT3 = PORT3 & 0xFF;
+  81   1        //  if (PORT3_PIN1 == 0)
+  82   1        //    PORT3 = PORT3 | 0x02; 
+  83   1        //  else
+  84   1        //    PORT3 = PORT3 & 0xFF;
+  85   1        PORT3 = PORT3 | 0x03;
+  86   1        if (PORT3_PIN2 == 0)
+  87   1          PORT3 |= 0x04;
+  88   1        else
+  89   1          PORT3 &= 0xFF;
+  90   1        if (PORT3_PIN3 == 0)
+  91   1          PORT3 |= 0x08;
+  92   1        else
+  93   1          PORT3 = PORT3 & 0xFF;
+  94   1        if (PORT3_PIN4 == 0)
+  95   1          PORT3 |= 0x10;
+  96   1        else
+  97   1          PORT3 = PORT3 & 0xFF;
+  98   1        if (PORT3_PIN5 == 0)
+  99   1          PORT3 |= 0x20;
+ 100   1        else
+ 101   1          PORT3 &= 0xFF;
+ 102   1        if (PORT3_PIN6 == 0)
+ 103   1          PORT3 |= 0x40;
+ 104   1        else
+ 105   1          PORT3 &= 0xFF;
+ 106   1        if (PORT3_PIN7 == 0)
+ 107   1          PORT3 |= 0x80;
+ 108   1        else
+ 109   1          PORT3 &= 0xFF;
+ 110   1      
+ 111   1        return PORT3;
+ 112   1      }
+ 113          
+ 114          void Transmit_Data() {
+ 115   1        TX_Data[0] = IDENTITY_BYTE;
+ 116   1        TX_Data[1] = START_BYTE;
+C51 COMPILER V9.60.0.0   DEVICE_FUNC                                                       08/09/2022 13:41:54 PAGE 3   
+
+ 117   1        TX_Data[2] = P0;
+ 118   1        TX_Data[3] = P2;
+ 119   1        TX_Data[4] = CHECKSUM(TX_Data[2], TX_Data[3]);
+ 120   1        TX_Data[5] = END_BYTE;
+ 121   1        Tx_char(TX_Data[0]);
+ 122   1        Tx_char(TX_Data[1]);
+ 123   1        Tx_char(TX_Data[2]);
+ 124   1        Tx_char(TX_Data[3]);
+ 125   1        Tx_char(TX_Data[4]);
+ 126   1        Tx_char(TX_Data[5]);
+ 127   1      }
+ 128          
+ 129          void Received_Data() {
+ 130   1        if (RX_Data[0] == IDENTITY_BYTE) {
+ 131   2          if (RX_Data[1] == START_BYTE) {
+ 132   3            unsigned char temp = CHECKSUM(RX_Data[2], RX_Data[3]);
+ 133   3            if ((RX_Data[4] == temp) && (RX_Data[5] == END_BYTE)) {
+ 134   4              P1 = ~RX_Data[2];// receive "0xFF" convert to "0x00"(leds ON)
+ 135   4              P3 = ~RX_Data[3];// receive "0x00" convert to "0xFF"(leds OFF)
+ 136   4              //            memset(RX_Data, '\0', 6 * sizeof(char));
+ 137   4            }
+ 138   3            //          else {
+ 139   3            //            RX_Index=0;
+ 140   3            //            Tx_string("WRONG CHECKSUM or END_BYTE");
+ 141   3            //            memset(RX_Data, '\0', 6 * sizeof(char));
+ 142   3            //          }
+ 143   3          }
+ 144   2          //        else {
+ 145   2          //          RX_Index=0;
+ 146   2          //          Tx_string("WRONG START_BYTE");
+ 147   2          //          memset(RX_Data, '\0', 6 * sizeof(char));
+ 148   2          //        }
+ 149   2        }
+ 150   1        //      else
+ 151   1        //      {
+ 152   1        //        RX_Index=0;
+ 153   1        //        Tx_string("IDENTITY WRONG");
+ 154   1        //        memset(RX_Data, '\0', 6 * sizeof(char));
+ 155   1        //      }
+ 156   1      }
+ 157          
+ 158          void Ports_Init() {
+ 159   1        P1 = 0x00; // OUTPUT PORT
+ 160   1        // P2 = 0x00; // OUTPUT PORT
+ 161   1        P2 = 0xFF; // INPUT PORT
+ 162   1        P0 = 0xFF; // INPUT PORT
+ 163   1        Port3_Init();
+ 164   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    271    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

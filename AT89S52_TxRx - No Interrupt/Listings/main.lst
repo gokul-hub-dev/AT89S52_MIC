@@ -1,0 +1,77 @@
+C51 COMPILER V9.60.0.0   MAIN                                                              06/24/2022 16:46:48 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <REGX51.H>
+   2          #include <MyHeader.h>
+   3          #define TX_CAPACITY 6
+   4          unsigned char tx_data[TX_CAPACITY];
+   5          
+   6          unsigned int i;
+   7          unsigned char Rx_Data[TX_CAPACITY];
+   8          
+   9          
+  10          void main() {
+  11   1        Int_Uart();
+  12   1      
+  13   1        P1 = 0x00; // OUTPUT PORT
+  14   1        P2 = 0x00; // OUTPUT PORT
+  15   1        P0 = 0xFF; // INPUT PORT
+  16   1        Port3_Init();
+  17   1      
+  18   1        while (1) {
+  19   2      
+  20   2      //    tx_data[0] = IDENTITY_BYTE;
+  21   2      //    tx_data[1] = START_BYTE;
+  22   2      //    tx_data[2] = P0;
+  23   2      //    tx_data[3] = P3;
+  24   2      //    tx_data[4] = CHECKSUM(tx_data[2], tx_data[3]);
+  25   2      //    tx_data[5] = END_BYTE;
+  26   2      //    Tx_string(tx_data);
+  27   2      
+  28   2          Rx_Data[0] = Rx_char();
+  29   2          if (Rx_Data[0] == IDENTITY_BYTE) {
+  30   3            for (i = 1; i < 6; i++)
+  31   3              Rx_Data[i] = Rx_char();
+  32   3            
+  33   3            if (Rx_Data[1] == START_BYTE) {
+  34   4              unsigned char temp  = CHECKSUM(Rx_Data[2], Rx_Data[3]); 
+  35   4              if ((Rx_Data[4] == temp)&& (Rx_Data[5] == END_BYTE)) 
+  36   4              {
+  37   5                P1 = Rx_Data[2];
+  38   5                P2 = Rx_Data[3];
+  39   5                memset(Rx_Data, '\0', 6 * sizeof(char));
+  40   5              } else {
+  41   5                Tx_string("WRONG CHECKSUM or END_BYTE");
+  42   5                memset(Rx_Data, '\0', 6 * sizeof(char));
+  43   5              }
+  44   4            } else {
+  45   4              Tx_string("WRONG START_BYTE");
+  46   4              memset(Rx_Data, '\0', 6 * sizeof(char));
+  47   4            }
+  48   3            memset(Rx_Data, '\0', 6 * sizeof(char));
+  49   3          }
+  50   2        }
+  51   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.60.0.0   MAIN                                                              06/24/2022 16:46:48 PAGE 2   
+
+   CODE SIZE        =    153    ----
+   CONSTANT SIZE    =     44    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     14       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
